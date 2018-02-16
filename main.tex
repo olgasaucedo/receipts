@@ -1,0 +1,78 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% This is a LaTeX document. Modify it at your own risk.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[fontsize=13pt,headinclude=false,footinclude=false,DIV=1]{scrartcl}    % General settings
+\usepackage[paperwidth=108mm,paperheight=69.5mm,margin=1cm]{geometry}    % Paper size and margins.
+\usepackage{datatool}	% For importing the .csv file
+\usepackage{parskip}	% No indenting of paragraphs
+\usepackage[spanish]{babel}		% Spanish
+\usepackage{fmtcount}	% Commands for names of numbers
+\usepackage{datetime}	% Commands for names of months
+\usepackage[utf8]{inputenc}	% For special Spanish characters
+\usepackage[osf]{mathpazo}	% Font and numbers font. For numbers that are a uniform height, delete [osf]
+
+
+\title{Receipts}
+
+\FCloadlang{spanish} % fmtcount setup
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Modify the name of the database here:
+\DTLloaddb{names}{mar12.csv}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\letras}[1]{ % Prints amounts in words.
+	\numberstringnum{#1}\relax
+    }
+    
+\newcommand{\twodigits}[1] {% Checks if null or empty and zero padding macro
+    \DTLifnullorempty{#1}{00}{%
+		\ifnum#1=0 {00}\else{%
+        	\ifnum#1=00 #1\else{%
+    			\ifnum#1<10 0#1\else #1\fi%
+        	}\fi%
+        }\fi
+     }%
+}
+
+\newcommand{\twocent}{\twodigits{\centavos}} % Prints cents with two digits.
+
+\newcommand{\viaticos}[1]{\DTLifnullorempty{#1}{viáticos}{#1}} % Prints 'viáticos' as default when there is no other 'Concepto'.
+
+\pagestyle{empty} % No page numbers
+\raggedright % Page formatting
+
+%%%%%%%%%%%%%%%%% End of preamble %%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+\DTLforeach*{names}{%
+	\dia=Dia,
+    \mes=Mes,
+    \ano=Ano,
+    \nombre=Nombre,
+    \balboas=Balboas,
+    \centavos=Centavos,
+    \concepto=Concepto%
+    } 
+    {
+	\newpage
+    Panamá, \dia\space de \monthname[\mes] de \ano \par%
+    
+    Yo, \Large\nombre\normalsize, %
+%    
+    recibí de Hotel Foo la suma de\letras{\balboas}\space balboas %
+    	%
+\DTLifSubString{00}{\centavos}{}{con\letras{\centavos}\space centavos}
+              \Large(\$\,\balboas\normalsize.\twocent\Large)\normalsize\space por concepto de %
+%              
+    \viaticos{\concepto}.
+    
+    \vfill x \medskip
+    
+    \hrule
+    
+    \hfill Firma \hfill
+	}
+    
+\end{document}
